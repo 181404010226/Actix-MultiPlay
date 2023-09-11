@@ -75,24 +75,17 @@
     <section>
       <h2>Commands</h2>
       <table style="border-spacing: 0.5em">
-        <tr>
-          <td>
-            <code>/list</code>
-          </td>
-          <td>list all available rooms</td>
-        </tr>
-        <tr>
-          <td>
-            <code>/join name</code>
-          </td>
-          <td>join room, if room does not exist, create new one</td>
-        </tr>
-        <tr>
-          <td>
-            <code>/name name</code>
-          </td>
-          <td>set session name</td>
-        </tr>
+        <div>
+          <button id="list">List Rooms</button>
+        </div>
+        <div>
+          <button id="join">Join Room</button>
+          <input type="text" id="roomName" placeholder="Enter room name" />
+        </div>
+        <div>
+          <button id="setName">Set Name</button>
+          <input type="text" id="userName" placeholder="Enter your name" />
+        </div>
         <tr>
           <td>
             <code>some message</code>
@@ -108,6 +101,11 @@
       const $log = document.querySelector('#log')
       const $form = document.querySelector('#chatform')
       const $input = document.querySelector('#text')
+      const $list = document.querySelector('#list')
+      const $join = document.querySelector('#join')
+      const $roomNameInput = document.querySelector('#roomName');
+      const $setName = document.querySelector('#setName');
+      const $userNameInput = document.querySelector('#userName');
 
       /** @type {WebSocket | null} */
       var socket = null
@@ -191,6 +189,46 @@
         $input.focus()
       })
 
+      
+      $list.addEventListener('click', () => {
+        if (socket) {
+          socket.send('/list');
+        }
+      });
+
+      function joinRoom() {
+        const roomName = document.querySelector('#roomName').value;
+        if (socket && roomName) {
+          socket.send(`/join ${roomName}`);
+        }
+      }
+
+      $join.addEventListener('click', joinRoom);
+
+      $roomNameInput.addEventListener('keypress', (event) => {
+        if (event.keyCode === 13) {
+          joinRoom();
+          event.preventDefault(); // Prevent form submission
+        }
+      });
+
+      function SetUserName() {
+        const userName = document.querySelector('#userName').value;
+        if (socket && userName) {
+          socket.send(`/name ${userName}`);
+        }
+      }
+
+      $setName.addEventListener('click', SetUserName);
+
+      $userNameInput.addEventListener('keypress', (event) => {
+        if (event.keyCode === 13) {
+          SetUserName();
+          event.preventDefault(); // Prevent form submission
+        }
+      });
+
+      
       updateConnectionStatus()
 
     </script>
