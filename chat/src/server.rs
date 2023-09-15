@@ -11,7 +11,6 @@ use std::{
 };
 
 use actix::prelude::*;
-use rand::{self, rngs::ThreadRng, Rng};
 
 /// Chat server sends this messages to session
 #[derive(Message)]
@@ -71,8 +70,8 @@ pub struct Join {
 pub struct ChatServer {
     sessions: HashMap<usize, Recipient<Message>>,
     rooms: HashMap<String, HashSet<usize>>,
-    rng: ThreadRng,
     visitor_count: Arc<AtomicUsize>,
+    counter:usize,
 }
 
 impl ChatServer {
@@ -84,8 +83,8 @@ impl ChatServer {
         ChatServer {
             sessions: HashMap::new(),
             rooms,
-            rng: rand::thread_rng(),
             visitor_count,
+            counter:0,
         }
     }
 }
@@ -113,7 +112,7 @@ impl Actor for ChatServer {
 }
 
 /// Handler for Connect message.
-///
+/// 用于处理Connect类型的消息
 /// Register new session and assign unique id to this session
 impl Handler<Connect> for ChatServer {
     type Result = usize;
@@ -124,8 +123,11 @@ impl Handler<Connect> for ChatServer {
         // notify all users in same room
         self.send_message("main", "Someone joined", 0);
 
-        // register session with random id
-        let id = self.rng.gen::<usize>();
+        // increasing session id
+        let id = {
+            self.counter += 1;
+            self.counter
+        };
         self.sessions.insert(id, msg.addr);
 
         // auto join session to main room
